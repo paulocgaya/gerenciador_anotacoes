@@ -23,7 +23,7 @@ public class DiarioApp extends JFrame {
     public DiarioApp() {
         // Define diretório padrão: ~/.diario
         String home = System.getProperty("user.home");
-        storage = new Armazenamento(Path.of(home, ".diario"));
+        storage = new Armazenamento(Path.of(home, "diario_App"));
         initComponents();
         carregarCadernos();
     }
