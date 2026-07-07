@@ -32,10 +32,10 @@ public class Armazenamento {
         return nomes;
     }
 
-    // Carregar um caderno (lista de páginas)
     public Caderno carregarCaderno(String nome) {
         Path dir = diretorioRaiz.resolve(nome);
         if (!Files.isDirectory(dir)) return null;
+
         Caderno cad = new Caderno(nome);
         File[] arquivos = dir.toFile().listFiles((d, name) -> name.endsWith(".txt"));
         if (arquivos != null) {
@@ -62,6 +62,11 @@ public class Armazenamento {
         }
     }
 
+    public Path getDiretorioRaiz() {
+        return diretorioRaiz;
+    }
+
+
     private String lerArquivo(File f) {
         try {
             return Files.readString(f.toPath());
@@ -69,4 +74,15 @@ public class Armazenamento {
             return "";
         }
     }
+
+    // Adicione este método à classe Armazenamento
+    public void salvarCaderno(Caderno caderno) {
+        Path dir = diretorioRaiz.resolve(caderno.getNome());
+        try {
+            Files.createDirectories(dir);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
 }

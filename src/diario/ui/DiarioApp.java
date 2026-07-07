@@ -113,7 +113,7 @@ public class DiarioApp extends JFrame {
         String nome = JOptionPane.showInputDialog(this, "Nome do caderno:");
         if (nome != null && !nome.trim().isEmpty()) {
             Caderno novo = new Caderno(nome);
-            storage.carregarCaderno(nome); // garante que a pasta exista
+            storage.salvarCaderno(novo); // Salva o caderno (cria a pasta)
             carregarCadernos();
         }
     }
