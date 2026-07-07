@@ -1,0 +1,155 @@
+package diario.ui;
+
+import diario.model.*;
+import diario.storage.Armazenamento;
+
+import javax.swing.*;
+import javax.swing.event.*;
+import java.awt.*;
+import java.io.*;
+import java.nio.file.Path;
+import java.util.List;
+
+public class DiarioApp extends JFrame {
+    private Armazenamento storage;
+    private DefaultListModel<String> modeloCadernos;
+    private DefaultListModel<String> modeloPaginas;
+    private JList<String> listaCadernos;
+    private JList<String> listaPaginas;
+    private JTextArea areaTexto;
+    private Caderno cadernoAtual;
+    private Pagina paginaAtual;
+
+    public DiarioApp() {
+        // Define diretório padrão: ~/.diario
+        String home = System.getProperty("user.home");
+        storage = new Armazenamento(Path.of(home, ".diario"));
+        initComponents();
+        carregarCadernos();
+    }
+
+    private void initComponents() {
+        setTitle("Diário Pessoal");
+        setDefaultCloseOperation(EXIT_ON_CLOSE);
+        setSize(800, 600);
+        setLayout(new BorderLayout());
+
+        // Painel esquerdo (cadernos e páginas)
+        JPanel painelEsquerdo = new JPanel(new GridLayout(2,1));
+        // --- Lista de cadernos ---
+        modeloCadernos = new DefaultListModel<>();
+        listaCadernos = new JList<>(modeloCadernos);
+        listaCadernos.addListSelectionListener(e -> {
+            if (!e.getValueIsAdjusting()) {
+                String nome = listaCadernos.getSelectedValue();
+                if (nome != null) {
+                    cadernoAtual = storage.carregarCaderno(nome);
+                    atualizarPaginas();
+                }
+            }
+        });
+        JScrollPane scrollCadernos = new JScrollPane(listaCadernos);
+        scrollCadernos.setBorder(BorderFactory.createTitledBorder("Cadernos"));
+        painelEsquerdo.add(scrollCadernos);
+
+        // --- Lista de páginas ---
+        modeloPaginas = new DefaultListModel<>();
+        listaPaginas = new JList<>(modeloPaginas);
+        listaPaginas.addListSelectionListener(e -> {
+            if (!e.getValueIsAdjusting()) {
+                int idx = listaPaginas.getSelectedIndex();
+                if (cadernoAtual != null && idx >= 0 && idx < cadernoAtual.getPaginas().size()) {
+                    paginaAtual = cadernoAtual.getPaginas().get(idx);
+                    areaTexto.setText(paginaAtual.getConteudo());
+                }
+            }
+        });
+        JScrollPane scrollPaginas = new JScrollPane(listaPaginas);
+        scrollPaginas.setBorder(BorderFactory.createTitledBorder("Páginas"));
+        painelEsquerdo.add(scrollPaginas);
+
+        add(painelEsquerdo, BorderLayout.WEST);
+
+        // Área central (texto)
+        areaTexto = new JTextArea();
+        areaTexto.setBorder(BorderFactory.createTitledBorder("Conteúdo"));
+        add(new JScrollPane(areaTexto), BorderLayout.CENTER);
+
+        // Painel inferior (botões)
+        JPanel botoes = new JPanel(new FlowLayout());
+        JButton btnNovoCaderno = new JButton("Novo Caderno");
+        JButton btnNovaPagina = new JButton("Nova Página");
+        JButton btnSalvar = new JButton("Salvar");
+        JButton btnExcluir = new JButton("Excluir");
+
+        btnNovoCaderno.addActionListener(e -> novoCaderno());
+        btnNovaPagina.addActionListener(e -> novaPagina());
+        btnSalvar.addActionListener(e -> salvarPagina());
+        btnExcluir.addActionListener(e -> excluir());
+
+        botoes.add(btnNovoCaderno);
+        botoes.add(btnNovaPagina);
+        botoes.add(btnSalvar);
+        botoes.add(btnExcluir);
+        add(botoes, BorderLayout.SOUTH);
+    }
+
+    private void carregarCadernos() {
+        modeloCadernos.clear();
+        List<String> nomes = storage.listarCadernos();
+        for (String n : nomes) modeloCadernos.addElement(n);
+    }
+
+    private void atualizarPaginas() {
+        modeloPaginas.clear();
+        if (cadernoAtual != null) {
+            for (Pagina p : cadernoAtual.getPaginas()) {
+                modeloPaginas.addElement(p.getTitulo());
+            }
+        }
+    }
+
+    private void novoCaderno() {
+        String nome = JOptionPane.showInputDialog(this, "Nome do caderno:");
+        if (nome != null && !nome.trim().isEmpty()) {
+            Caderno novo = new Caderno(nome);
+            storage.carregarCaderno(nome); // garante que a pasta exista
+            carregarCadernos();
+        }
+    }
+
+    private void novaPagina() {
+        if (cadernoAtual == null) {
+            JOptionPane.showMessageDialog(this, "Selecione um caderno primeiro.");
+            return;
+        }
+        String titulo = JOptionPane.showInputDialog(this, "Título da página:");
+        if (titulo != null && !titulo.trim().isEmpty()) {
+            Pagina p = new Pagina(titulo);
+            cadernoAtual.adicionarPagina(p);
+            storage.salvarPagina(cadernoAtual, p);
+            atualizarPaginas();
+        }
+    }
+
+    private void salvarPagina() {
+        if (paginaAtual != null) {
+            paginaAtual.setConteudo(areaTexto.getText());
+            storage.salvarPagina(cadernoAtual, paginaAtual);
+            JOptionPane.showMessageDialog(this, "Página salva.");
+        } else {
+            JOptionPane.showMessageDialog(this, "Selecione uma página para salvar.");
+        }
+    }
+
+    private void excluir() {
+        // Implementar exclusão de caderno ou página conforme seleção
+        JOptionPane.showMessageDialog(this, "Funcionalidade a implementar.");
+    }
+
+    public static void main(String[] args) {
+        SwingUtilities.invokeLater(() -> {
+            new DiarioApp().setVisible(true);
+        });
+    }
+}
