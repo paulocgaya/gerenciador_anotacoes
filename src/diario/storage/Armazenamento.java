@@ -94,6 +94,32 @@ public class Armazenamento {
         }
     }
 
+    public boolean renomearCaderno(String nomeAntigo, String nomeNovo) {
+        Path origem = diretorioRaiz.resolve(nomeAntigo);
+        Path destino = diretorioRaiz.resolve(nomeNovo);
+        if (Files.exists(destino)) return false; // evita sobrescrever outro caderno
+        try {
+            Files.move(origem, destino);
+            return true;
+        } catch (IOException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    public boolean renomearPagina(Caderno caderno, Pagina pagina, String novoTitulo) {
+        Path dir = diretorioRaiz.resolve(caderno.getNome());
+        Path origem = dir.resolve(pagina.getTitulo() + ".txt");
+        Path destino = dir.resolve(novoTitulo + ".txt");
+        if (Files.exists(destino)) return false;
+        try {
+            Files.move(origem, destino);
+            return true;
+        } catch (IOException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
 
     private String lerArquivo(File f) {
         try {
@@ -112,5 +138,7 @@ public class Armazenamento {
             e.printStackTrace();
         }
     }
+
+
 
 }

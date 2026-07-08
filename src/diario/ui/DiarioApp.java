@@ -80,16 +80,19 @@ public class DiarioApp extends JFrame {
         JButton btnNovoCaderno = new JButton("Novo Caderno");
         JButton btnNovaPagina = new JButton("Nova Página");
         JButton btnSalvar = new JButton("Salvar");
+        JButton btnRenomear = new JButton("Renomear");
         JButton btnExcluir = new JButton("Excluir");
 
         btnNovoCaderno.addActionListener(e -> novoCaderno());
         btnNovaPagina.addActionListener(e -> novaPagina());
         btnSalvar.addActionListener(e -> salvarPagina());
+        btnRenomear.addActionListener(e -> renomear());
         btnExcluir.addActionListener(e -> excluir());
 
         botoes.add(btnNovoCaderno);
         botoes.add(btnNovaPagina);
         botoes.add(btnSalvar);
+        botoes.add(btnRenomear);
         botoes.add(btnExcluir);
         add(botoes, BorderLayout.SOUTH);
     }
@@ -142,6 +145,37 @@ public class DiarioApp extends JFrame {
         }
     }
 
+    private void renomearPaginaSelecionada(int idx) {
+        Pagina p = cadernoAtual.getPaginas().get(idx);
+        String novoTitulo = JOptionPane.showInputDialog(this, "Novo título:", p.getTitulo());
+        if (novoTitulo == null || novoTitulo.trim().isEmpty()) return;
+
+        boolean ok = storage.renomearPagina(cadernoAtual, p, novoTitulo);
+        if (!ok) {
+            JOptionPane.showMessageDialog(this, "Já existe uma página com esse título.");
+            return;
+        }
+        p.setTitulo(novoTitulo);
+        atualizarPaginas();
+    }
+
+    private void renomearCadernoSelecionado(String nomeCaderno) {
+        String novoNome = JOptionPane.showInputDialog(this, "Novo nome do caderno:", nomeCaderno);
+        if (novoNome == null || novoNome.trim().isEmpty()) return;
+
+        boolean ok = storage.renomearCaderno(nomeCaderno, novoNome);
+        if (!ok) {
+            JOptionPane.showMessageDialog(this, "Já existe um caderno com esse nome.");
+            return;
+        }
+
+        if (cadernoAtual != null && cadernoAtual.getNome().equals(nomeCaderno)) {
+            cadernoAtual.setNome(novoNome);
+        }
+        carregarCadernos();
+        listaCadernos.setSelectedValue(novoNome, true);
+    }
+
     private void excluir() {
         int idxPagina = listaPaginas.getSelectedIndex();
         if (cadernoAtual != null && idxPagina >= 0) {
@@ -156,6 +190,22 @@ public class DiarioApp extends JFrame {
         }
 
         JOptionPane.showMessageDialog(this, "Selecione um caderno ou uma página para excluir.");
+    }
+
+    private void renomear() {
+        int idxPagina = listaPaginas.getSelectedIndex();
+        if (cadernoAtual != null && idxPagina >= 0) {
+            renomearPaginaSelecionada(idxPagina);
+            return;
+        }
+
+        String nomeCaderno = listaCadernos.getSelectedValue();
+        if (nomeCaderno != null) {
+            renomearCadernoSelecionado(nomeCaderno);
+            return;
+        }
+
+        JOptionPane.showMessageDialog(this, "Selecione um caderno ou uma página para renomear.");
     }
 
     private void excluirPaginaSelecionada(int idx) {
