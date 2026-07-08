@@ -51,6 +51,7 @@ public class DiarioApp extends JFrame {
         JScrollPane scrollCadernos = new JScrollPane(listaCadernos);
         scrollCadernos.setBorder(BorderFactory.createTitledBorder("Cadernos"));
         painelEsquerdo.add(scrollCadernos);
+        scrollCadernos.setPreferredSize(new Dimension(200, 250));
 
         // --- Lista de páginas ---
         modeloPaginas = new DefaultListModel<>();
@@ -61,14 +62,19 @@ public class DiarioApp extends JFrame {
                 if (cadernoAtual != null && idx >= 0 && idx < cadernoAtual.getPaginas().size()) {
                     paginaAtual = cadernoAtual.getPaginas().get(idx);
                     areaTexto.setText(paginaAtual.getConteudo());
+
                 }
             }
+
         });
         JScrollPane scrollPaginas = new JScrollPane(listaPaginas);
         scrollPaginas.setBorder(BorderFactory.createTitledBorder("Páginas"));
         painelEsquerdo.add(scrollPaginas);
 
         add(painelEsquerdo, BorderLayout.WEST);
+
+        scrollCadernos.setPreferredSize(new Dimension(200, 250));
+        scrollPaginas.setPreferredSize(new Dimension(200, 250));
 
         // Área central (texto)
         areaTexto = new JTextArea();
