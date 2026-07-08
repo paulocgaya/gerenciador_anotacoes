@@ -143,8 +143,51 @@ public class DiarioApp extends JFrame {
     }
 
     private void excluir() {
-        // Implementar exclusão de caderno ou página conforme seleção
-        JOptionPane.showMessageDialog(this, "Funcionalidade a implementar.");
+        int idxPagina = listaPaginas.getSelectedIndex();
+        if (cadernoAtual != null && idxPagina >= 0) {
+            excluirPaginaSelecionada(idxPagina);
+            return;
+        }
+
+        String nomeCaderno = listaCadernos.getSelectedValue();
+        if (nomeCaderno != null) {
+            excluirCadernoSelecionado(nomeCaderno);
+            return;
+        }
+
+        JOptionPane.showMessageDialog(this, "Selecione um caderno ou uma página para excluir.");
+    }
+
+    private void excluirPaginaSelecionada(int idx) {
+        Pagina p = cadernoAtual.getPaginas().get(idx);
+        int confirmacao = JOptionPane.showConfirmDialog(this,
+                "Excluir a página \"" + p.getTitulo() + "\"?",
+                "Confirmar exclusão", JOptionPane.YES_NO_OPTION);
+        if (confirmacao != JOptionPane.YES_OPTION) return;
+
+        storage.excluirPagina(cadernoAtual, p);
+        cadernoAtual.removerPagina(p);
+        if (paginaAtual == p) {
+            paginaAtual = null;
+            areaTexto.setText("");
+        }
+        atualizarPaginas();
+    }
+
+    private void excluirCadernoSelecionado(String nomeCaderno) {
+        int confirmacao = JOptionPane.showConfirmDialog(this,
+                "Excluir o caderno \"" + nomeCaderno + "\" e todas as suas páginas?",
+                "Confirmar exclusão", JOptionPane.YES_NO_OPTION);
+        if (confirmacao != JOptionPane.YES_OPTION) return;
+
+        storage.excluirCaderno(nomeCaderno);
+        if (cadernoAtual != null && cadernoAtual.getNome().equals(nomeCaderno)) {
+            cadernoAtual = null;
+            paginaAtual = null;
+            areaTexto.setText("");
+            modeloPaginas.clear();
+        }
+        carregarCadernos();
     }
 
     public static void main(String[] args) {

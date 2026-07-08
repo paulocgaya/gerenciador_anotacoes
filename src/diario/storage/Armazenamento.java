@@ -66,6 +66,34 @@ public class Armazenamento {
         return diretorioRaiz;
     }
 
+    // Excluir uma página (apaga o arquivo .txt)
+    public void excluirPagina(Caderno caderno, Pagina pagina) {
+        Path arquivo = diretorioRaiz.resolve(caderno.getNome()).resolve(pagina.getTitulo() + ".txt");
+        try {
+            Files.deleteIfExists(arquivo);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    // Excluir um caderno (apaga a pasta e todas as páginas dentro dela)
+    public void excluirCaderno(String nome) {
+        Path dir = diretorioRaiz.resolve(nome);
+        if (!Files.isDirectory(dir)) return;
+        try (var caminhos = Files.walk(dir)) {
+            caminhos.sorted(Comparator.reverseOrder())
+                    .forEach(p -> {
+                        try {
+                            Files.delete(p);
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                    });
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
 
     private String lerArquivo(File f) {
         try {
